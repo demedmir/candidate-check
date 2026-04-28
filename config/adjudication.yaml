@@ -1,0 +1,41 @@
+# Adjudication rule-pack: per-сегмент пороги и веса по коннекторам.
+# Скор результата = сумма весов всех CheckResult'ов запуска.
+# segment подбирается по полю Candidate.role_segment (на старте — default).
+
+segments:
+  default:
+    thresholds:
+      green_max: 29     # 0..29 → green
+      yellow_max: 69    # 30..69 → yellow
+      # 70+ → red
+    weights:
+      inn_checksum:     {fail: 30,  warning: 5,   error: 5}
+      fns_npd:          {fail: 0,   warning: 0,   error: 5}
+      fns_rdl:          {fail: 100, warning: 20,  error: 10}
+      efrsb_persons:    {fail: 80,  warning: 30,  error: 10}
+      rosfinmon:        {fail: 100, warning: 10,  error: 10}
+      opensanctions:    {fail: 100, warning: 25,  error: 5}
+
+  driver:
+    thresholds:
+      green_max: 19
+      yellow_max: 49
+    weights:
+      inn_checksum:     {fail: 20,  warning: 5,   error: 5}
+      fns_npd:          {fail: 0,   warning: 0,   error: 5}
+      fns_rdl:          {fail: 100, warning: 30,  error: 10}
+      efrsb_persons:    {fail: 50,  warning: 20,  error: 10}
+      rosfinmon:        {fail: 100, warning: 15,  error: 10}
+      opensanctions:    {fail: 100, warning: 30,  error: 5}
+
+  financial:
+    thresholds:
+      green_max: 9
+      yellow_max: 39
+    weights:
+      inn_checksum:     {fail: 50,  warning: 10,  error: 10}
+      fns_npd:          {fail: 0,   warning: 0,   error: 10}
+      fns_rdl:          {fail: 100, warning: 40,  error: 20}
+      efrsb_persons:    {fail: 100, warning: 50,  error: 20}
+      rosfinmon:        {fail: 100, warning: 20,  error: 20}
+      opensanctions:    {fail: 100, warning: 50,  error: 10}

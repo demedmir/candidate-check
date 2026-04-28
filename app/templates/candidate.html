@@ -8,23 +8,44 @@
     <dt>Телефон</dt><dd>{{ cand.phone or "—" }}</dd>
     <dt>Email</dt><dd>{{ cand.email or "—" }}</dd>
     <dt>Дата рождения</dt><dd>{{ cand.birth_date.strftime("%Y-%m-%d") if cand.birth_date else "—" }}</dd>
+    <dt>Сегмент роли</dt><dd>{{ cand.role_segment }}</dd>
     <dt>Согласие</dt><dd>{{ "Подписано на бумаге" if cand.consent_signed_offline else "Не отмечено" }}{% if cand.consent_signed_at %} — {{ cand.consent_signed_at.strftime("%Y-%m-%d %H:%M") }}{% endif %}</dd>
 </dl>
 
-<h2>Проверки</h2>
+<h2>Запуск проверки</h2>
 {% if cand.consent_signed_offline %}
-<form method="post" action="/hr/candidates/{{ cand.id }}/check" class="inline">
+<form method="post" action="/hr/candidates/{{ cand.id }}/check" class="form">
+    <fieldset>
+        <legend>Выбор источников</legend>
+        {% for c in connectors %}
+        <label class="check">
+            <input type="checkbox" name="connector_keys" value="{{ c.key }}" checked>
+            <span><b>{{ c.title }}</b> <code class="muted">{{ c.key }}</code></span>
+        </label>
+        {% endfor %}
+    </fieldset>
     <button type="submit">Запустить проверку</button>
+    <p class="muted">Если ничего не выбрать — запустятся все источники.</p>
 </form>
 {% else %}
 <p class="warn">Запуск проверки заблокирован: согласие не отмечено.</p>
 {% endif %}
 
 {% if last_run %}
-<h3>Последний запуск #{{ last_run.id }} — {{ last_run.status.value }}</h3>
-{% if last_run.started_at %}
-<p class="muted">Старт: {{ last_run.started_at.strftime("%Y-%m-%d %H:%M:%S") }}{% if last_run.finished_at %} → конец: {{ last_run.finished_at.strftime("%Y-%m-%d %H:%M:%S") }}{% endif %}</p>
+<h2>Последний запуск #{{ last_run.id }}</h2>
+{% if last_run.risk_segment %}
+<div class="risk risk-{{ last_run.risk_segment }}">
+    <span class="risk-dot"></span>
+    <span class="risk-label">{{ {"green":"Зелёный","yellow":"Жёлтый","red":"Красный"}[last_run.risk_segment] }}</span>
+    <span class="risk-score">score = {{ last_run.risk_score }}</span>
+</div>
 {% endif %}
+<p class="muted">
+    Статус: {{ last_run.status.value }}
+    {% if last_run.started_at %} • старт: {{ last_run.started_at.strftime("%Y-%m-%d %H:%M:%S") }}{% endif %}
+    {% if last_run.finished_at %} • конец: {{ last_run.finished_at.strftime("%Y-%m-%d %H:%M:%S") }}{% endif %}
+</p>
+
 <table class="data">
     <thead>
         <tr><th>Источник</th><th>Статус</th><th>Резюме</th><th>Длительность</th></tr>
@@ -32,7 +53,7 @@
     <tbody>
     {% for r in last_results %}
         <tr class="status-{{ r.status.value }}">
-            <td>{{ r.source }}</td>
+            <td><code>{{ r.source }}</code></td>
             <td>{{ r.status.value }}</td>
             <td>{{ r.summary }}</td>
             <td>{{ r.duration_ms or "—" }} ms</td>
@@ -44,16 +65,22 @@
 </table>
 {% endif %}
 
-<h3>История запусков</h3>
+<h2>История запусков</h2>
 <table class="data">
     <thead>
-        <tr><th>#</th><th>Статус</th><th>Создан</th></tr>
+        <tr><th>#</th><th>Сегмент</th><th>Score</th><th>Статус</th><th>Создан</th></tr>
     </thead>
     <tbody>
     {% for run in runs %}
-        <tr><td>{{ run.id }}</td><td>{{ run.status.value }}</td><td>{{ run.created_at.strftime("%Y-%m-%d %H:%M") }}</td></tr>
+        <tr>
+            <td>{{ run.id }}</td>
+            <td>{% if run.risk_segment %}<span class="risk-pill risk-{{ run.risk_segment }}">{{ run.risk_segment }}</span>{% else %}—{% endif %}</td>
+            <td>{{ run.risk_score if run.risk_score is not none else "—" }}</td>
+            <td>{{ run.status.value }}</td>
+            <td>{{ run.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+        </tr>
     {% else %}
-        <tr><td colspan="3" class="muted">Запусков ещё не было</td></tr>
+        <tr><td colspan="5" class="muted">Запусков ещё не было</td></tr>
     {% endfor %}
     </tbody>
 </table>

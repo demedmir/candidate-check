@@ -27,6 +27,8 @@ async def get_run(
         "run_id": run.id,
         "candidate_id": run.candidate_id,
         "status": run.status.value,
+        "risk_score": run.risk_score,
+        "risk_segment": run.risk_segment,
         "started_at": run.started_at.isoformat() if run.started_at else None,
         "finished_at": run.finished_at.isoformat() if run.finished_at else None,
         "results": [

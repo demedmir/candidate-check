@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import SESSION_COOKIE, current_user, make_session, verify_password
 from app.checks import enqueue_check_run
+from app.connectors.registry import all_connectors
 from app.db import get_session
 from app.models import Candidate, CheckResult, CheckRun, User
 from app.storage import save_consent_file
@@ -84,6 +85,7 @@ async def create_candidate(
     snils: str | None = Form(None),
     phone: str | None = Form(None),
     email: str | None = Form(None),
+    role_segment: str = Form("default"),
     consent_signed_offline: bool = Form(False),
     consent_file: UploadFile | None = File(None),
     user: User = Depends(current_user),
@@ -106,6 +108,7 @@ async def create_candidate(
         snils=_strip_or_none(snils),
         phone=_strip_or_none(phone),
         email=_strip_or_none(email),
+        role_segment=role_segment.strip() or "default",
         consent_signed_offline=consent_signed_offline,
         consent_file_path=consent_path,
         consent_signed_at=consent_at,
@@ -149,6 +152,7 @@ async def candidate_detail(
             "runs": runs,
             "last_run": last_run,
             "last_results": last_results,
+            "connectors": all_connectors(),
         },
     )
 
@@ -156,6 +160,7 @@ async def candidate_detail(
 @router.post("/candidates/{candidate_id}/check")
 async def run_check(
     candidate_id: int,
+    request: Request,
     user: User = Depends(current_user),
     db: AsyncSession = Depends(get_session),
 ):
@@ -164,9 +169,13 @@ async def run_check(
         raise HTTPException(404)
     if not cand.consent_signed_offline:
         raise HTTPException(400, "Согласие на бумаге не отмечено")
+
+    form = await request.form()
+    selected = form.getlist("connector_keys") or None
+
     run = CheckRun(candidate_id=candidate_id, requested_by_id=user.id)
     db.add(run)
     await db.commit()
     await db.refresh(run)
-    await enqueue_check_run(run.id)
+    await enqueue_check_run(run.id, selected)
     return RedirectResponse(f"/hr/candidates/{candidate_id}", status_code=302)

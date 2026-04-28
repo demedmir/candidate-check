@@ -18,6 +18,16 @@
         <label>Email <input type="email" name="email"></label>
     </fieldset>
     <fieldset>
+        <legend>Сегмент роли (для скоринга)</legend>
+        <label>
+            <select name="role_segment">
+                <option value="default" selected>default — общая</option>
+                <option value="driver">driver — водители</option>
+                <option value="financial">financial — финсектор</option>
+            </select>
+        </label>
+    </fieldset>
+    <fieldset>
         <legend>Согласие на обработку ПДн (152-ФЗ)</legend>
         <label class="check">
             <input type="checkbox" name="consent_signed_offline" value="true">

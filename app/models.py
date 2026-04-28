@@ -49,6 +49,8 @@ class Candidate(Base):
     consent_file_path: Mapped[str | None] = mapped_column(String(500))
     consent_signed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
+    role_segment: Mapped[str] = mapped_column(String(32), default="default")
+
     created_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
@@ -77,6 +79,9 @@ class CheckRun(Base):
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     requested_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    risk_score: Mapped[int | None] = mapped_column(Integer)
+    risk_segment: Mapped[str | None] = mapped_column(String(16))  # "green" | "yellow" | "red"
 
     candidate: Mapped[Candidate] = relationship(back_populates="runs")
     results: Mapped[list["CheckResult"]] = relationship(

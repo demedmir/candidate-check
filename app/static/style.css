@@ -29,3 +29,15 @@ table.data thead th { background: #fafafa; font-weight: 600; }
 .meta dd { margin: 0; font-size: 14px; }
 .inline { display: inline; }
 h1, h2, h3 { font-weight: 600; }
+code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; background: rgba(0,0,0,.04); padding: 1px 6px; border-radius: 4px; }
+.risk { display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-size: 14px; margin: 8px 0; background: #fff; border: 1px solid #e0e0e2; }
+.risk-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+.risk-green .risk-dot { background: #2da44e; }
+.risk-yellow .risk-dot { background: #d29922; }
+.risk-red .risk-dot { background: #cf222e; }
+.risk-label { font-weight: 600; }
+.risk-score { color: #57606a; font-family: ui-monospace, monospace; font-size: 13px; }
+.risk-pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; }
+.risk-pill.risk-green { background: #2da44e; }
+.risk-pill.risk-yellow { background: #d29922; }
+.risk-pill.risk-red { background: #cf222e; }

@@ -12,8 +12,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
+ARG INSTALL_DEV=true
+
 COPY pyproject.toml ./
-RUN pip install --upgrade pip && pip install -e .
+RUN pip install --upgrade pip && \
+    if [ "$INSTALL_DEV" = "true" ]; then pip install -e ".[dev]"; else pip install -e .; fi
 
 COPY . .
 
