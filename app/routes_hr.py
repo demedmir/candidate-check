@@ -23,7 +23,7 @@ async def root():
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_form(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request, "user": None})
+    return templates.TemplateResponse(request, "login.html", {"user": None})
 
 
 @router.post("/login")
@@ -58,16 +58,13 @@ async def candidates_list(
     res = await db.execute(select(Candidate).order_by(Candidate.created_at.desc()))
     candidates = res.scalars().all()
     return templates.TemplateResponse(
-        "candidates.html",
-        {"request": request, "user": user, "candidates": candidates},
+        request, "candidates.html", {"user": user, "candidates": candidates}
     )
 
 
 @router.get("/candidates/new", response_class=HTMLResponse)
 async def new_candidate_form(request: Request, user: User = Depends(current_user)):
-    return templates.TemplateResponse(
-        "new_candidate.html", {"request": request, "user": user}
-    )
+    return templates.TemplateResponse(request, "new_candidate.html", {"user": user})
 
 
 def _strip_or_none(s: str | None) -> str | None:
@@ -144,9 +141,9 @@ async def candidate_detail(
         )
         last_results = rr.scalars().all()
     return templates.TemplateResponse(
+        request,
         "candidate.html",
         {
-            "request": request,
             "user": user,
             "cand": cand,
             "runs": runs,

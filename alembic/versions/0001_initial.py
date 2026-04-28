@@ -49,7 +49,6 @@ def upgrade() -> None:
     op.create_index("ix_candidates_inn", "candidates", ["inn"])
 
     check_status = sa.Enum("pending", "running", "completed", "failed", name="checkstatus")
-    check_status.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "check_runs",
@@ -65,7 +64,6 @@ def upgrade() -> None:
     op.create_index("ix_check_runs_status", "check_runs", ["status"])
 
     result_status = sa.Enum("ok", "warning", "fail", "error", name="resultstatus")
-    result_status.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "check_results",
