@@ -1,41 +1,51 @@
-# Adjudication rule-pack: per-сегмент пороги и веса по коннекторам.
-# Скор результата = сумма весов всех CheckResult'ов запуска.
-# segment подбирается по полю Candidate.role_segment (на старте — default).
+# Adjudication rule-pack.
+#
+# ПРАВИЛО: штрафуем ТОЛЬКО за реальный негатив (`fail` — кандидат реально найден
+# в чёрном реестре). Технические warning'и/error'ы (WAF блокирует, нет API-ключа,
+# кэш не загружен) НЕ начисляются — это наша проблема, не кандидата.
+#
+# Светофор по итоговому скору:
+#   green  : 0
+#   yellow : 1..69
+#   red    : >=70
 
 segments:
   default:
     thresholds:
-      green_max: 29     # 0..29 → green
-      yellow_max: 69    # 30..69 → yellow
+      green_max: 0       # ровно 0 → green (никаких негативов)
+      yellow_max: 69     # 1..69 → yellow
       # 70+ → red
     weights:
-      inn_checksum:     {fail: 30,  warning: 5,   error: 5}
-      fns_npd:          {fail: 0,   warning: 0,   error: 5}
-      fns_rdl:          {fail: 100, warning: 20,  error: 10}
-      efrsb_persons:    {fail: 80,  warning: 30,  error: 10}
-      rosfinmon:        {fail: 100, warning: 10,  error: 10}
-      opensanctions:    {fail: 100, warning: 25,  error: 5}
+      inn_checksum:     {fail: 0,   warning: 0,   error: 0}
+      fns_npd:          {fail: 0,   warning: 0,   error: 0}
+      fns_rdl:          {fail: 100, warning: 0,   error: 0}
+      efrsb_persons:    {fail: 80,  warning: 0,   error: 0}
+      rosfinmon:        {fail: 100, warning: 0,   error: 0}
+      opensanctions:    {fail: 100, warning: 0,   error: 0}
+      passport_mvd:     {fail: 70,  warning: 0,   error: 0}
 
   driver:
     thresholds:
-      green_max: 19
+      green_max: 0
       yellow_max: 49
     weights:
-      inn_checksum:     {fail: 20,  warning: 5,   error: 5}
-      fns_npd:          {fail: 0,   warning: 0,   error: 5}
-      fns_rdl:          {fail: 100, warning: 30,  error: 10}
-      efrsb_persons:    {fail: 50,  warning: 20,  error: 10}
-      rosfinmon:        {fail: 100, warning: 15,  error: 10}
-      opensanctions:    {fail: 100, warning: 30,  error: 5}
+      inn_checksum:     {fail: 0,   warning: 0,   error: 0}
+      fns_npd:          {fail: 0,   warning: 0,   error: 0}
+      fns_rdl:          {fail: 100, warning: 0,   error: 0}
+      efrsb_persons:    {fail: 50,  warning: 0,   error: 0}
+      rosfinmon:        {fail: 100, warning: 0,   error: 0}
+      opensanctions:    {fail: 100, warning: 0,   error: 0}
+      passport_mvd:     {fail: 100, warning: 0,   error: 0}
 
   financial:
     thresholds:
-      green_max: 9
+      green_max: 0
       yellow_max: 39
     weights:
-      inn_checksum:     {fail: 50,  warning: 10,  error: 10}
-      fns_npd:          {fail: 0,   warning: 0,   error: 10}
-      fns_rdl:          {fail: 100, warning: 40,  error: 20}
-      efrsb_persons:    {fail: 100, warning: 50,  error: 20}
-      rosfinmon:        {fail: 100, warning: 20,  error: 20}
-      opensanctions:    {fail: 100, warning: 50,  error: 10}
+      inn_checksum:     {fail: 0,   warning: 0,   error: 0}
+      fns_npd:          {fail: 0,   warning: 0,   error: 0}
+      fns_rdl:          {fail: 100, warning: 0,   error: 0}
+      efrsb_persons:    {fail: 100, warning: 0,   error: 0}
+      rosfinmon:        {fail: 100, warning: 0,   error: 0}
+      opensanctions:    {fail: 100, warning: 0,   error: 0}
+      passport_mvd:     {fail: 100, warning: 0,   error: 0}

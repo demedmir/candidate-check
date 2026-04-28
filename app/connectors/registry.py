@@ -3,6 +3,7 @@ from app.connectors.efrsb import EfrsbConnector
 from app.connectors.inn import InnValidatorConnector
 from app.connectors.npd import SelfEmployedConnector
 from app.connectors.opensanctions import OpenSanctionsConnector
+from app.connectors.passport_mvd import PassportMvdConnector
 from app.connectors.rdl import RdlConnector
 from app.connectors.rosfinmon import RosfinmonConnector
 
@@ -15,6 +16,7 @@ def all_connectors() -> list[SourceConnector]:
         EfrsbConnector(),
         RosfinmonConnector(),
         OpenSanctionsConnector(),
+        PassportMvdConnector(),
     ]
 
 

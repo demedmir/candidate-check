@@ -35,8 +35,12 @@ class InnValidatorConnector:
                 payload={"reason": "no_inn"},
             )
         ok, msg = validate_inn(candidate.inn)
+        # checksum-mismatch — это не "негатив", а "не уверены".
+        # Алгоритм проверки имеет известные edge-case'ы (legacy ИНН ФНС
+        # иногда не сходятся по стандартной формуле, но числятся в базе).
+        # Поэтому только warning, не fail.
         return ConnectorOutcome(
-            status="ok" if ok else "fail",
-            summary=msg,
+            status="ok" if ok else "warning",
+            summary=msg + ("" if ok else " — рекомендуется ручная проверка через ФНС"),
             payload={"inn": candidate.inn, "valid": ok},
         )
