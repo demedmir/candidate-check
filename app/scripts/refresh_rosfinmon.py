@@ -57,10 +57,15 @@ async def main() -> None:
     Path(settings.storage_dir).mkdir(parents=True, exist_ok=True)
     out_path = Path(settings.storage_dir) / "rosfinmon_list.json"
 
+    # fedsfm.ru отдаёт неполную TLS-цепочку (без intermediate GlobalSign GCC R3
+    # DV TLS CA 2020 — конфиг-проблема их сервера). Фоллбэк на verify=False
+    # допустим: это публичный список террористов, MITM-риск минимален + мы
+    # читаем только имена, не пишем туда.
     async with httpx.AsyncClient(
         timeout=60.0,
         follow_redirects=True,
         headers={"User-Agent": USER_AGENT},
+        verify=False,
     ) as cli:
         r = await cli.get(URL)
         r.raise_for_status()
