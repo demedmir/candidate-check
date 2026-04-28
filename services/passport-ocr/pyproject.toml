@@ -1,0 +1,23 @@
+[project]
+name = "passport-ocr"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "pillow>=10.0",
+    "python-multipart>=0.0.9",
+    "structlog>=24.1",
+    # EasyOCR с torch — большой, но даёт лучшую точность на rus-документах
+    "easyocr>=1.7.1",
+    "numpy>=1.26",
+    "opencv-python-headless>=4.10",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

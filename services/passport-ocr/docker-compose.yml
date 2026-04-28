@@ -1,0 +1,21 @@
+services:
+  passport-ocr:
+    build: .
+    image: passport-ocr:0.1
+    container_name: passport-ocr
+    restart: unless-stopped
+    environment:
+      OCR_API_TOKEN: ${OCR_API_TOKEN:-}
+    ports:
+      - "9998:9998"
+    volumes:
+      - easyocr-models:/root/.EasyOCR
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9998/healthz').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s   # easyocr грузит модели
+
+volumes:
+  easyocr-models:
