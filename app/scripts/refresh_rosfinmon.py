@@ -41,13 +41,22 @@ def _parse_xml(xml_text: str) -> list[dict]:
 
 
 def _parse_text_fallback(text: str) -> list[dict]:
-    """Если получили HTML/CSV — пытаемся извлечь ФИО+ДР построчно."""
+    """HTML-страница fedsfm.ru с записями вида:
+        1. АБАДИЕВ МАГОМЕД МИКАИЛОВИЧ*, 09.11.1982
+    UPPERCASE-ФИО (2-4 слова), опциональная звёздочка, потом ", DD.MM.YYYY".
+    """
     out: list[dict] = []
     pat = re.compile(
-        r"([А-ЯЁ][а-яё-]+(?:\s+[А-ЯЁ][а-яё-]+){1,2})[^,;]*?(\d{2}\.\d{2}\.\d{4})"
+        r"([А-ЯЁ][А-ЯЁ\-]+(?:\s+[А-ЯЁ][А-ЯЁ\-]+){1,3})\*?\s*,\s*(\d{2}\.\d{2}\.\d{4})"
     )
+    seen: set[tuple[str, str]] = set()
     for m in pat.finditer(text):
-        name, bd_dmy = m.group(1), m.group(2)
+        name = re.sub(r"\s+", " ", m.group(1).strip())
+        bd_dmy = m.group(2)
+        key = (name, bd_dmy)
+        if key in seen:
+            continue
+        seen.add(key)
         d, mo, y = bd_dmy.split(".")
         out.append({"full_name": name, "birth_date": f"{y}-{mo}-{d}", "raw": {}})
     return out
