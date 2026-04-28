@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Кандидаты{% endblock %}
+{% block content %}
+<div class="header-row">
+    <h1>Кандидаты</h1>
+    <a href="/hr/candidates/new" class="btn-primary">+ Новый</a>
+</div>
+<table class="data">
+    <thead>
+        <tr><th>ФИО</th><th>ИНН</th><th>Согласие</th><th>Создан</th></tr>
+    </thead>
+    <tbody>
+    {% for c in candidates %}
+        <tr>
+            <td><a href="/hr/candidates/{{ c.id }}">{{ c.last_name }} {{ c.first_name }} {{ c.middle_name or "" }}</a></td>
+            <td>{{ c.inn or "—" }}</td>
+            <td>{{ "✓" if c.consent_signed_offline else "—" }}</td>
+            <td>{{ c.created_at.strftime("%Y-%m-%d") }}</td>
+        </tr>
+    {% else %}
+        <tr><td colspan="4" class="muted">Нет кандидатов</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

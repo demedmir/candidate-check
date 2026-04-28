@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ cand.last_name }} {{ cand.first_name }}{% endblock %}
+{% block content %}
+<h1>{{ cand.last_name }} {{ cand.first_name }} {{ cand.middle_name or "" }}</h1>
+<dl class="meta">
+    <dt>ИНН</dt><dd>{{ cand.inn or "—" }}</dd>
+    <dt>СНИЛС</dt><dd>{{ cand.snils or "—" }}</dd>
+    <dt>Телефон</dt><dd>{{ cand.phone or "—" }}</dd>
+    <dt>Email</dt><dd>{{ cand.email or "—" }}</dd>
+    <dt>Дата рождения</dt><dd>{{ cand.birth_date.strftime("%Y-%m-%d") if cand.birth_date else "—" }}</dd>
+    <dt>Согласие</dt><dd>{{ "Подписано на бумаге" if cand.consent_signed_offline else "Не отмечено" }}{% if cand.consent_signed_at %} — {{ cand.consent_signed_at.strftime("%Y-%m-%d %H:%M") }}{% endif %}</dd>
+</dl>
+
+<h2>Проверки</h2>
+{% if cand.consent_signed_offline %}
+<form method="post" action="/hr/candidates/{{ cand.id }}/check" class="inline">
+    <button type="submit">Запустить проверку</button>
+</form>
+{% else %}
+<p class="warn">Запуск проверки заблокирован: согласие не отмечено.</p>
+{% endif %}
+
+{% if last_run %}
+<h3>Последний запуск #{{ last_run.id }} — {{ last_run.status.value }}</h3>
+{% if last_run.started_at %}
+<p class="muted">Старт: {{ last_run.started_at.strftime("%Y-%m-%d %H:%M:%S") }}{% if last_run.finished_at %} → конец: {{ last_run.finished_at.strftime("%Y-%m-%d %H:%M:%S") }}{% endif %}</p>
+{% endif %}
+<table class="data">
+    <thead>
+        <tr><th>Источник</th><th>Статус</th><th>Резюме</th><th>Длительность</th></tr>
+    </thead>
+    <tbody>
+    {% for r in last_results %}
+        <tr class="status-{{ r.status.value }}">
+            <td>{{ r.source }}</td>
+            <td>{{ r.status.value }}</td>
+            <td>{{ r.summary }}</td>
+            <td>{{ r.duration_ms or "—" }} ms</td>
+        </tr>
+    {% else %}
+        <tr><td colspan="4" class="muted">Результатов нет (запуск ещё не завершён?)</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<h3>История запусков</h3>
+<table class="data">
+    <thead>
+        <tr><th>#</th><th>Статус</th><th>Создан</th></tr>
+    </thead>
+    <tbody>
+    {% for run in runs %}
+        <tr><td>{{ run.id }}</td><td>{{ run.status.value }}</td><td>{{ run.created_at.strftime("%Y-%m-%d %H:%M") }}</td></tr>
+    {% else %}
+        <tr><td colspan="3" class="muted">Запусков ещё не было</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

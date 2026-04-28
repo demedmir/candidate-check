@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Новый кандидат{% endblock %}
+{% block content %}
+<h1>Новый кандидат</h1>
+<form method="post" action="/hr/candidates" enctype="multipart/form-data" class="form">
+    <fieldset>
+        <legend>Личные данные</legend>
+        <label>Фамилия <input name="last_name" required></label>
+        <label>Имя <input name="first_name" required></label>
+        <label>Отчество <input name="middle_name"></label>
+        <label>Дата рождения <input type="date" name="birth_date"></label>
+    </fieldset>
+    <fieldset>
+        <legend>Идентификаторы</legend>
+        <label>ИНН <input name="inn" pattern="\d{10,12}"></label>
+        <label>СНИЛС <input name="snils"></label>
+        <label>Телефон <input name="phone"></label>
+        <label>Email <input type="email" name="email"></label>
+    </fieldset>
+    <fieldset>
+        <legend>Согласие на обработку ПДн (152-ФЗ)</legend>
+        <label class="check">
+            <input type="checkbox" name="consent_signed_offline" value="true">
+            Согласие подписано кандидатом на бумаге
+        </label>
+        <label>Скан согласия (PDF/JPG) <input type="file" name="consent_file" accept=".pdf,.jpg,.jpeg,.png"></label>
+    </fieldset>
+    <button type="submit">Создать</button>
+</form>
+{% endblock %}
