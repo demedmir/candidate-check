@@ -1,0 +1,15 @@
+services:
+  solver:
+    build: .
+    image: captcha-solver:0.1
+    container_name: captcha-solver
+    restart: unless-stopped
+    environment:
+      CAPTCHA_API_TOKEN: ${CAPTCHA_API_TOKEN:-}
+    ports:
+      - "9999:9999"   # доступен через Tailscale 100.x:9999 (на хосте Spark)
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9999/healthz').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
