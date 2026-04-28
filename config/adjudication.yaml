@@ -24,6 +24,10 @@ segments:
       opensanctions:    {fail: 100, warning: 0,   error: 0}
       passport_mvd:     {fail: 70,  warning: 0,   error: 0}
       fssp:             {fail: 50,  warning: 0,   error: 0}
+      rnp_44:           {fail: 60,  warning: 10,  error: 0}
+      inoagents:        {fail: 80,  warning: 0,   error: 0}
+      sudact:           {fail: 40,  warning: 0,   error: 0}
+      kad_arbitr:       {fail: 30,  warning: 0,   error: 0}
 
   driver:
     thresholds:
@@ -38,6 +42,10 @@ segments:
       opensanctions:    {fail: 100, warning: 0,   error: 0}
       passport_mvd:     {fail: 100, warning: 0,   error: 0}
       fssp:             {fail: 70,  warning: 0,   error: 0}
+      rnp_44:           {fail: 50,  warning: 5,   error: 0}
+      inoagents:        {fail: 80,  warning: 0,   error: 0}
+      sudact:           {fail: 30,  warning: 0,   error: 0}
+      kad_arbitr:       {fail: 20,  warning: 0,   error: 0}
 
   financial:
     thresholds:
@@ -52,3 +60,7 @@ segments:
       opensanctions:    {fail: 100, warning: 0,   error: 0}
       passport_mvd:     {fail: 100, warning: 0,   error: 0}
       fssp:             {fail: 100, warning: 0,   error: 0}
+      rnp_44:           {fail: 100, warning: 20,  error: 0}
+      inoagents:        {fail: 100, warning: 0,   error: 0}
+      sudact:           {fail: 60,  warning: 0,   error: 0}
+      kad_arbitr:       {fail: 50,  warning: 0,   error: 0}
