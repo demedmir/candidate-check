@@ -203,5 +203,13 @@ async def get_run(
         select(CheckResult).where(CheckResult.run_id == run_id).order_by(CheckResult.id)
     )
     results = [CheckResultResponse.model_validate(r) for r in rr.scalars().all()]
-    detail = CheckRunDetail.model_validate(run).model_copy(update={"results": results})
-    return detail
+    return CheckRunDetail(
+        id=run.id,
+        status=run.status.value,
+        risk_score=run.risk_score,
+        risk_segment=run.risk_segment,
+        started_at=run.started_at,
+        finished_at=run.finished_at,
+        created_at=run.created_at,
+        results=results,
+    )
