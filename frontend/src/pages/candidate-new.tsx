@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PassportUploader } from "@/components/passport-uploader";
+import type { PassportOcrFields } from "@/lib/api";
 
 const SEGMENTS = [
   { value: "default", label: "default — общая роль" },
@@ -34,6 +36,20 @@ export function CandidateNewPage() {
 
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function applyOcr(fields: PassportOcrFields) {
+    setForm((f) => ({
+      ...f,
+      last_name: fields.last_name || f.last_name,
+      first_name: fields.first_name || f.first_name,
+      middle_name: fields.middle_name || f.middle_name,
+      birth_date: fields.birth_date || f.birth_date,
+      passport:
+        fields.series && fields.number
+          ? `${fields.series} ${fields.number}`
+          : f.passport,
+    }));
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -67,11 +83,14 @@ export function CandidateNewPage() {
       <PageHeader
         eyebrow="new dossier"
         title="Новый кандидат"
-        description="Заполни поля → запустишь проверку с детальной страницы"
+        description="Заполни поля или загрузи скан паспорта для автозаполнения"
         actions={
-          <Link to="/candidates">
-            <Button variant="ghost"><ChevronLeft size={16} /> К списку</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <PassportUploader onRecognized={applyOcr} />
+            <Link to="/candidates">
+              <Button variant="ghost"><ChevronLeft size={16} /> К списку</Button>
+            </Link>
+          </div>
         }
       />
       <PageBody>

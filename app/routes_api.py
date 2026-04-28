@@ -31,6 +31,8 @@ from app.schemas import (
     UserResponse,
 )
 
+from app.passport.recognizer import PassportOcrError, recognize_passport
+
 ALLOWED_DOC_TYPES = {
     "pnd": "Справка ПНД (психиатр)",
     "ndn": "Справка нарк. диспансера",
@@ -156,6 +158,23 @@ async def get_candidate(
     if not cand:
         raise HTTPException(404)
     return await _attach_last_run(db, cand)
+
+
+# ── Passport OCR ──────────────────────────────────────────────────
+@router.post("/passport-ocr")
+async def passport_ocr(
+    image: UploadFile = File(...),
+    _: User = Depends(current_user_jwt),
+):
+    raw = await image.read()
+    if not raw:
+        raise HTTPException(400, "Пустой файл")
+    if len(raw) > 20 * 1024 * 1024:
+        raise HTTPException(400, "Файл больше 20 MB")
+    try:
+        return await recognize_passport(raw)
+    except PassportOcrError as e:
+        raise HTTPException(503, f"OCR недоступен: {e}")
 
 
 # ── Documents ──────────────────────────────────────────────────────

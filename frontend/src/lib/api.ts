@@ -71,6 +71,26 @@ export type DocType = {
   label: string;
 };
 
+export type PassportOcrFields = {
+  last_name: string | null;
+  first_name: string | null;
+  middle_name: string | null;
+  birth_date: string | null;
+  gender: "male" | "female" | null;
+  series: string | null;
+  number: string | null;
+  issue_date: string | null;
+  issuing_authority_code: string | null;
+  place_of_birth: string | null;
+  raw_text: string;
+};
+
+export type PassportOcrResponse = {
+  fields: PassportOcrFields;
+  lines: string[];
+  elapsed_ms: number;
+};
+
 export type DocumentRecord = {
   id: number;
   candidate_id: number;

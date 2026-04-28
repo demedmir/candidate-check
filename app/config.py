@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     capmonster_key: str = ""
     captcha_solver_url: str = ""  # http://100.92.151.1:9999 (Spark via Tailscale)
     captcha_solver_token: str = ""
+    passport_ocr_url: str = ""    # http://100.92.151.1:9998 (Spark via Tailscale)
+    passport_ocr_token: str = ""
 
     @property
     def database_url(self) -> str:
