@@ -65,7 +65,7 @@ export function LoginPage() {
           </div>
           <div>
             <div className="mono mb-1 text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--muted-fg))]">
-              candidate-check / hr
+              candidate-check · кабинет hr
             </div>
             <h1 className="text-3xl font-semibold tracking-tight">
               <span className="text-gradient">Авторизация</span>
@@ -121,7 +121,7 @@ export function LoginPage() {
             <span className="absolute inline-flex h-full w-full animate-ring-pulse rounded-full bg-[hsl(var(--success))]" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[hsl(var(--success))]" />
           </span>
-          TLS · 152-ФЗ · ru-region
+          защищённое соединение · 152-ФЗ · ru-сегмент
         </div>
       </motion.div>
     </div>

@@ -81,7 +81,7 @@ export function CandidateNewPage() {
   return (
     <>
       <PageHeader
-        eyebrow="new dossier"
+        eyebrow="новое досье"
         title="Новый кандидат"
         description="Загрузи фото паспорта — поля заполнятся автоматически. Или впиши вручную."
         actions={

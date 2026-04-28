@@ -42,7 +42,7 @@ export function CandidatesListPage() {
   return (
     <>
       <PageHeader
-        eyebrow="dossier index"
+        eyebrow="реестр кандидатов"
         title="Кандидаты"
         description="Реестр запросов на проверку, риск-скоринг и аудит источников"
         actions={
@@ -57,9 +57,9 @@ export function CandidatesListPage() {
         {/* Stat strip */}
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatTile label="Всего" value={data?.length ?? 0} tone="primary" />
-          <StatTile label="Green" value={totals.green} tone="green" />
-          <StatTile label="Yellow" value={totals.yellow} tone="yellow" />
-          <StatTile label="Red" value={totals.red} tone="red" />
+          <StatTile label="Зелёные" value={totals.green} tone="green" />
+          <StatTile label="Жёлтые" value={totals.yellow} tone="yellow" />
+          <StatTile label="Красные" value={totals.red} tone="red" />
         </div>
 
         <div className="mb-4 flex items-center gap-2">

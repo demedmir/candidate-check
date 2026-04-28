@@ -63,7 +63,7 @@ export function PassportDropZone({
               <div className="absolute inset-0 grid place-items-center bg-black/50 backdrop-blur-sm">
                 <div className="flex flex-col items-center gap-2 text-white">
                   <Loader2 size={24} className="animate-spin" />
-                  <span className="mono text-[10px] uppercase tracking-widest">scan</span>
+                  <span className="mono text-[10px] uppercase tracking-widest">скан</span>
                 </div>
                 <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[hsl(var(--primary))] to-transparent animate-scan" />
               </div>
@@ -77,7 +77,7 @@ export function PassportDropZone({
           <div className="flex items-center justify-between gap-3 p-5">
             <div>
               <div className="mono mb-1 text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--muted-fg))]">
-                {loading ? "passport-ocr · spark · gpu" : "готово"}
+                {loading ? "распознавание · spark gpu" : "готово"}
               </div>
               <div className="text-base font-semibold">
                 {loading
@@ -146,14 +146,14 @@ export function PassportDropZone({
               Перетащите фото паспорта
             </h3>
             <span className="mono inline-flex items-center gap-1 rounded-full bg-[hsl(var(--accent-soft))] px-2 py-0.5 text-[10px] uppercase tracking-wider text-[hsl(var(--accent))]">
-              <Sparkles size={10} /> AI
+              <Sparkles size={10} /> ИИ
             </span>
           </div>
           <p className="mt-0.5 text-xs text-[hsl(var(--muted-fg))]">
             или нажмите чтобы выбрать файл — поля заполнятся автоматически
           </p>
           <p className="mono mt-1 text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">
-            jpg · png · heic · до 20 mb · easyocr на gpu
+            jpg · png · heic · до 20 МБ · распознавание на gpu
           </p>
         </div>
       </div>

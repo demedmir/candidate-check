@@ -35,7 +35,7 @@ export function Layout() {
           <div className="leading-tight">
             <div className="text-[14px] font-semibold tracking-tight">candidate-check</div>
             <div className="mono text-[9px] uppercase tracking-[0.2em] text-[hsl(var(--muted-fg))]">
-              v0.1 / prod
+              v0.1 · прод
             </div>
           </div>
         </Link>
@@ -86,7 +86,7 @@ export function Layout() {
                 <span className="absolute inline-flex h-full w-full animate-ring-pulse rounded-full bg-[hsl(var(--success))]" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[hsl(var(--success))]" />
               </span>
-              online
+              онлайн
             </span>
             <button
               onClick={() => setTheme(isDark ? "light" : "dark")}
@@ -94,7 +94,7 @@ export function Layout() {
               className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] text-[hsl(var(--muted-fg))] transition-colors hover:bg-[hsl(var(--muted))]"
             >
               {isDark ? <Sun size={12} /> : <Moon size={12} />}
-              {isDark ? "light" : "dark"}
+              {isDark ? "светлая" : "тёмная"}
             </button>
           </div>
         </div>
