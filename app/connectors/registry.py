@@ -1,5 +1,6 @@
 from app.connectors.base import SourceConnector
 from app.connectors.efrsb import EfrsbConnector
+from app.connectors.fssp import FsspConnector
 from app.connectors.inn import InnValidatorConnector
 from app.connectors.npd import SelfEmployedConnector
 from app.connectors.opensanctions import OpenSanctionsConnector
@@ -14,6 +15,7 @@ def all_connectors() -> list[SourceConnector]:
         SelfEmployedConnector(),
         RdlConnector(),
         EfrsbConnector(),
+        FsspConnector(),
         RosfinmonConnector(),
         OpenSanctionsConnector(),
         PassportMvdConnector(),
