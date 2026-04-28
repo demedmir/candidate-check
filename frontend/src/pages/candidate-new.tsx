@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PassportUploader } from "@/components/passport-uploader";
+import { PassportDropZone } from "@/components/passport-uploader";
 import type { PassportOcrFields } from "@/lib/api";
 
 const SEGMENTS = [
@@ -83,17 +83,17 @@ export function CandidateNewPage() {
       <PageHeader
         eyebrow="new dossier"
         title="Новый кандидат"
-        description="Заполни поля или загрузи скан паспорта для автозаполнения"
+        description="Загрузи фото паспорта — поля заполнятся автоматически. Или впиши вручную."
         actions={
-          <div className="flex items-center gap-2">
-            <PassportUploader onRecognized={applyOcr} />
-            <Link to="/candidates">
-              <Button variant="ghost"><ChevronLeft size={16} /> К списку</Button>
-            </Link>
-          </div>
+          <Link to="/candidates">
+            <Button variant="ghost"><ChevronLeft size={16} /> К списку</Button>
+          </Link>
         }
       />
       <PageBody>
+        <div className="mb-6 max-w-3xl">
+          <PassportDropZone onRecognized={applyOcr} />
+        </div>
         <form onSubmit={onSubmit} className="grid max-w-3xl gap-5">
           <Card>
             <CardHeader>
