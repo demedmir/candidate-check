@@ -102,7 +102,16 @@ export function PassportDropZone({
   }
 
   return (
-    <label
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => fileInput.current?.click()}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          fileInput.current?.click();
+        }
+      }}
       onDragOver={(e) => {
         e.preventDefault();
         setDragOver(true);
@@ -149,7 +158,14 @@ export function PassportDropZone({
         </div>
       </div>
 
-      <Button variant="primary" type="button" tabIndex={-1} className="pointer-events-none">
+      <Button
+        variant="primary"
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          fileInput.current?.click();
+        }}
+      >
         Выбрать файл
       </Button>
 
@@ -158,12 +174,13 @@ export function PassportDropZone({
         type="file"
         accept="image/*,.heic"
         className="hidden"
+        onClick={(e) => e.stopPropagation()}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) handleFile(f);
         }}
       />
-    </label>
+    </div>
   );
 }
 
