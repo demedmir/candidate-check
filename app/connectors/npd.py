@@ -1,3 +1,4 @@
+"""Проверка статуса самозанятого через ФНС НПД (открытый API)."""
 from datetime import date
 
 import httpx
@@ -29,8 +30,24 @@ class SelfEmployedConnector:
         body = {"inn": candidate.inn, "requestDate": date.today().isoformat()}
         async with httpx.AsyncClient(timeout=15.0) as cli:
             r = await cli.post(self.URL, json=body)
-            r.raise_for_status()
-            data = r.json()
+            data = r.json() if r.content else {}
+
+        # ФНС возвращает 422 + код ошибки — отдельные кейсы это не наш error,
+        # а ожидаемое состояние сервиса (rate-limit / ИНН не найден)
+        if r.status_code == 422:
+            code = data.get("code", "")
+            if code.endswith("limited.error"):
+                return ConnectorOutcome(
+                    status="warning",
+                    summary="ФНС rate-limit — повторите позднее",
+                    payload=data,
+                )
+            return ConnectorOutcome(
+                status="warning",
+                summary=data.get("message", "Validation error"),
+                payload=data,
+            )
+        r.raise_for_status()
 
         is_se = bool(data.get("status"))
         if is_se:

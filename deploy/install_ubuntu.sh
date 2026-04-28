@@ -110,10 +110,11 @@ log "Создаю HR-пользователя $HR_EMAIL"
 ( cd "$APP_DIR" && docker compose run --rm app python -m app.scripts.create_user "$HR_EMAIL" "$HR_PASSWORD" ) || \
     log "Юзер уже существует — пропускаем"
 
-# 9) Cron для Росфинмониторинга
-log "Cron для refresh_rosfinmon (раз в сутки в 03:30)"
-CRON_LINE="30 3 * * * cd $APP_DIR && docker compose run --rm worker python -m app.scripts.refresh_rosfinmon >> /var/log/candidate-check-rosfinmon.log 2>&1"
-( crontab -l 2>/dev/null | grep -v "refresh_rosfinmon"; echo "$CRON_LINE" ) | crontab -
+# 9) Cron-задачи для refresh внешних списков
+log "Cron: ежедневный refresh Росфинмона + OpenSanctions"
+CRON_RFM="30 3 * * * cd $APP_DIR && docker compose run --rm worker python -m app.scripts.refresh_rosfinmon >> /var/log/candidate-check-rosfinmon.log 2>&1"
+CRON_OS="45 3 * * * cd $APP_DIR && docker compose run --rm worker python -m app.scripts.refresh_opensanctions >> /var/log/candidate-check-opensanctions.log 2>&1"
+( crontab -l 2>/dev/null | grep -vE "refresh_rosfinmon|refresh_opensanctions"; echo "$CRON_RFM"; echo "$CRON_OS" ) | crontab -
 
 # 10) Nginx + Let's Encrypt
 if [[ "$WANT_NGINX" -eq 1 ]]; then
