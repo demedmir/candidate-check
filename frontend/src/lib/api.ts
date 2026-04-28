@@ -66,6 +66,21 @@ export type Candidate = {
   last_run: CheckRunSummary | null;
 };
 
+export type DocType = {
+  key: string;
+  label: string;
+};
+
+export type DocumentRecord = {
+  id: number;
+  candidate_id: number;
+  doc_type: string;
+  file_path: string;
+  file_name: string | null;
+  comment: string | null;
+  uploaded_at: string;
+};
+
 export type CandidateCreate = {
   last_name: string;
   first_name: string;

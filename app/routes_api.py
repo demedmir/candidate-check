@@ -16,7 +16,7 @@ from app.checks import enqueue_check_run
 from app.config import settings
 from app.connectors.registry import all_connectors
 from app.db import get_session
-from app.models import Candidate, CheckResult, CheckRun, User
+from app.models import Candidate, CandidateDocument, CheckResult, CheckRun, User
 from app.schemas import (
     CandidateCreate,
     CandidateResponse,
@@ -24,11 +24,22 @@ from app.schemas import (
     CheckRunDetail,
     CheckRunSummary,
     ConnectorInfo,
+    DocumentResponse,
     LoginRequest,
     RunCheckRequest,
     TokenResponse,
     UserResponse,
 )
+
+ALLOWED_DOC_TYPES = {
+    "pnd": "Справка ПНД (психиатр)",
+    "ndn": "Справка нарк. диспансера",
+    "military": "Военный билет",
+    "criminal_record": "Справка о судимости",
+    "diploma": "Диплом",
+    "passport_scan": "Скан паспорта",
+    "other": "Прочее",
+}
 
 router = APIRouter(prefix="/v1")
 
@@ -145,6 +156,86 @@ async def get_candidate(
     if not cand:
         raise HTTPException(404)
     return await _attach_last_run(db, cand)
+
+
+# ── Documents ──────────────────────────────────────────────────────
+@router.get("/document-types")
+async def list_doc_types(_: User = Depends(current_user_jwt)):
+    return [{"key": k, "label": v} for k, v in ALLOWED_DOC_TYPES.items()]
+
+
+@router.get(
+    "/candidates/{candidate_id}/documents",
+    response_model=list[DocumentResponse],
+)
+async def list_documents(
+    candidate_id: int,
+    _: User = Depends(current_user_jwt),
+    db: AsyncSession = Depends(get_session),
+):
+    res = await db.execute(
+        select(CandidateDocument)
+        .where(CandidateDocument.candidate_id == candidate_id)
+        .order_by(CandidateDocument.uploaded_at.desc())
+    )
+    return [DocumentResponse.model_validate(d) for d in res.scalars().all()]
+
+
+@router.post(
+    "/candidates/{candidate_id}/documents",
+    response_model=DocumentResponse,
+    status_code=201,
+)
+async def upload_document(
+    candidate_id: int,
+    doc_type: str = Form(...),
+    comment: str | None = Form(None),
+    file: UploadFile = File(...),
+    user: User = Depends(current_user_jwt),
+    db: AsyncSession = Depends(get_session),
+):
+    if doc_type not in ALLOWED_DOC_TYPES:
+        raise HTTPException(400, f"Unknown doc_type. Allowed: {list(ALLOWED_DOC_TYPES.keys())}")
+    cand = await db.get(Candidate, candidate_id)
+    if not cand:
+        raise HTTPException(404)
+    Path(settings.storage_dir).mkdir(parents=True, exist_ok=True)
+    ext = Path(file.filename or "doc.bin").suffix.lower() or ".bin"
+    name = f"{doc_type}_{candidate_id}_{uuid4().hex}{ext}"
+    full = Path(settings.storage_dir) / name
+    with full.open("wb") as f:
+        while chunk := await file.read(1024 * 1024):
+            f.write(chunk)
+    doc = CandidateDocument(
+        candidate_id=candidate_id,
+        doc_type=doc_type,
+        file_path=str(full),
+        file_name=file.filename,
+        comment=comment,
+        uploaded_by_id=user.id,
+    )
+    db.add(doc)
+    await db.commit()
+    await db.refresh(doc)
+    return DocumentResponse.model_validate(doc)
+
+
+@router.delete("/candidates/{candidate_id}/documents/{doc_id}", status_code=204)
+async def delete_document(
+    candidate_id: int,
+    doc_id: int,
+    _: User = Depends(current_user_jwt),
+    db: AsyncSession = Depends(get_session),
+):
+    doc = await db.get(CandidateDocument, doc_id)
+    if not doc or doc.candidate_id != candidate_id:
+        raise HTTPException(404)
+    try:
+        Path(doc.file_path).unlink(missing_ok=True)
+    except OSError:
+        pass
+    await db.delete(doc)
+    await db.commit()
 
 
 # ── Runs ───────────────────────────────────────────────────────────

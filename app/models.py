@@ -96,6 +96,20 @@ class ResultStatus(str, enum.Enum):
     ERROR = "error"
 
 
+class CandidateDocument(Base):
+    __tablename__ = "candidate_documents"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    candidate_id: Mapped[int] = mapped_column(
+        ForeignKey("candidates.id", ondelete="CASCADE"), index=True
+    )
+    doc_type: Mapped[str] = mapped_column(String(32))  # pnd | ndn | military | criminal | diploma | passport | other
+    file_path: Mapped[str] = mapped_column(String(500))
+    file_name: Mapped[str | None] = mapped_column(String(255))
+    comment: Mapped[str | None] = mapped_column(Text)
+    uploaded_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
 class CheckResult(Base):
     __tablename__ = "check_results"
     id: Mapped[int] = mapped_column(primary_key=True)

@@ -95,5 +95,19 @@ class RunCheckRequest(BaseModel):
     connector_keys: list[str] | None = None
 
 
+# ── Documents ──────────────────────────────────────────────────────
+class DocumentResponse(BaseModel):
+    id: int
+    candidate_id: int
+    doc_type: str
+    file_path: str
+    file_name: str | None = None
+    comment: str | None = None
+    uploaded_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 CandidateResponse.model_rebuild()
 TokenResponse.model_rebuild()

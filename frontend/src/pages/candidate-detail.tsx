@@ -33,6 +33,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Empty } from "@/components/ui/empty";
 import { RiskGauge } from "@/components/ui/risk-gauge";
+import { DocumentsSection } from "@/components/documents-section";
 import { cn, formatDate, formatDateTime } from "@/lib/utils";
 
 export function CandidateDetailPage() {
@@ -289,6 +290,8 @@ export function CandidateDetailPage() {
             </CardContent>
           </Card>
         )}
+
+        <div className="mb-6"><DocumentsSection candidateId={candidateId} /></div>
 
         {/* Run history */}
         <Card>
