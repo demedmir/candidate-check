@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     hr_session_ttl_seconds: int = 86400
 
     capmonster_key: str = ""
+    captcha_solver_url: str = ""  # http://100.92.151.1:9999 (Spark via Tailscale)
+    captcha_solver_token: str = ""
 
     @property
     def database_url(self) -> str:
