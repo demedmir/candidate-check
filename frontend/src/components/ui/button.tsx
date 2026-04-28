@@ -3,19 +3,19 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--primary))]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--bg))]",
+  "relative inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--primary))]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--bg))]",
   {
     variants: {
       variant: {
         default:
-          "bg-[hsl(var(--fg))] text-[hsl(var(--bg))] hover:opacity-90 shadow-[var(--shadow-sm)]",
+          "bg-[hsl(var(--fg))] text-[hsl(var(--bg))] hover:opacity-90 shadow-sm",
         primary:
-          "bg-[hsl(var(--primary))] text-[hsl(var(--primary-fg))] hover:brightness-110 shadow-[var(--shadow-sm)]",
+          "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] text-white shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.5)] hover:shadow-[0_6px_24px_-4px_hsl(var(--primary)/0.7)]",
         outline:
-          "border bg-[hsl(var(--surface))] hover:bg-[hsl(var(--surface-hover))] hover:border-[hsl(var(--border-strong))]",
+          "border border-[hsl(var(--border-strong))] bg-[hsl(var(--surface))] hover:border-[hsl(var(--primary))]/40 hover:bg-[hsl(var(--surface-2))]",
         ghost: "hover:bg-[hsl(var(--muted))]",
         danger:
-          "bg-[hsl(var(--danger))] text-white hover:brightness-110 shadow-[var(--shadow-sm)]",
+          "bg-[hsl(var(--danger))] text-white hover:brightness-110 shadow-sm",
         link: "text-[hsl(var(--primary))] underline-offset-4 hover:underline",
       },
       size: {

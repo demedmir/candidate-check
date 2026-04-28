@@ -2,62 +2,68 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ── Light theme ─────────────────────────────────────────────────── */
+/* ── Tech / HUD palette ─────────────────────────────────────────────
+   Тёмная по умолчанию: глубокий navy + electric cyan + violet accent.
+   Light — чистый "office" режим для тех, кто работает днём у окна. */
 :root {
-  --bg: 0 0% 100%;
-  --bg-alt: 240 5% 98%;
+  --bg: 240 8% 98%;
+  --bg-grid: 240 8% 96%;
   --surface: 0 0% 100%;
-  --surface-hover: 240 5% 96%;
-  --fg: 240 10% 8%;
-  --muted: 240 5% 96%;
-  --muted-fg: 240 4% 46%;
-  --border: 240 6% 90%;
-  --border-strong: 240 6% 80%;
-  --primary: 230 70% 56%;
+  --surface-2: 240 8% 97%;
+  --fg: 240 12% 8%;
+  --muted: 240 6% 94%;
+  --muted-fg: 240 4% 42%;
+  --border: 240 6% 88%;
+  --border-strong: 240 6% 78%;
+  --primary: 222 90% 56%;
   --primary-fg: 0 0% 100%;
-  --primary-soft: 230 70% 96%;
-  --danger: 0 72% 56%;
-  --danger-soft: 0 84% 96%;
+  --primary-soft: 222 100% 96%;
+  --accent: 263 80% 60%;
+  --accent-soft: 263 100% 96%;
+  --cyan: 192 95% 50%;
+  --success: 152 60% 42%;
+  --success-soft: 152 60% 95%;
   --warning: 38 92% 50%;
   --warning-soft: 38 92% 95%;
-  --success: 142 60% 42%;
-  --success-soft: 142 60% 95%;
-  --accent: 263 70% 60%;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
-  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04);
-  --shadow-lg: 0 16px 40px -12px rgb(0 0 0 / 0.1), 0 4px 8px -4px rgb(0 0 0 / 0.04);
+  --danger: 0 72% 56%;
+  --danger-soft: 0 84% 96%;
+  --shadow-glow: 0 0 0 1px hsl(var(--border)), 0 1px 3px rgb(0 0 0 / 0.05);
+  --shadow-soft: 0 8px 30px -8px rgb(0 0 0 / 0.1), 0 4px 12px -4px rgb(0 0 0 / 0.05);
 }
 
 .dark {
-  --bg: 240 8% 6%;
-  --bg-alt: 240 8% 9%;
-  --surface: 240 8% 10%;
-  --surface-hover: 240 6% 14%;
+  --bg: 240 12% 5%;
+  --bg-grid: 240 14% 7%;
+  --surface: 240 12% 8%;
+  --surface-2: 240 12% 11%;
   --fg: 0 0% 96%;
-  --muted: 240 6% 14%;
-  --muted-fg: 240 5% 60%;
-  --border: 240 5% 18%;
-  --border-strong: 240 5% 26%;
-  --primary: 230 90% 66%;
-  --primary-fg: 240 10% 8%;
-  --primary-soft: 230 70% 18%;
-  --danger: 0 80% 65%;
-  --danger-soft: 0 60% 16%;
-  --warning: 38 95% 60%;
-  --warning-soft: 38 70% 14%;
-  --success: 142 65% 52%;
-  --success-soft: 142 60% 14%;
-  --accent: 263 80% 70%;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 16px 40px -12px rgb(0 0 0 / 0.5), 0 4px 8px -4px rgb(0 0 0 / 0.3);
+  --muted: 240 8% 14%;
+  --muted-fg: 240 6% 60%;
+  --border: 240 8% 16%;
+  --border-strong: 240 8% 24%;
+  --primary: 222 100% 70%;
+  --primary-fg: 240 12% 5%;
+  --primary-soft: 222 80% 18%;
+  --accent: 263 100% 76%;
+  --accent-soft: 263 60% 18%;
+  --cyan: 188 100% 60%;
+  --success: 152 70% 56%;
+  --success-soft: 152 60% 16%;
+  --warning: 38 100% 62%;
+  --warning-soft: 38 70% 16%;
+  --danger: 0 90% 68%;
+  --danger-soft: 0 70% 18%;
+  --shadow-glow:
+    0 0 0 1px hsl(var(--border)),
+    0 0 24px -8px hsl(var(--primary) / 0.4);
+  --shadow-soft: 0 16px 48px -12px rgb(0 0 0 / 0.6);
 }
 
 @theme inline {
   --color-bg: hsl(var(--bg));
-  --color-bg-alt: hsl(var(--bg-alt));
+  --color-bg-grid: hsl(var(--bg-grid));
   --color-surface: hsl(var(--surface));
-  --color-surface-hover: hsl(var(--surface-hover));
+  --color-surface-2: hsl(var(--surface-2));
   --color-fg: hsl(var(--fg));
   --color-muted: hsl(var(--muted));
   --color-muted-fg: hsl(var(--muted-fg));
@@ -66,42 +72,79 @@
   --color-primary: hsl(var(--primary));
   --color-primary-fg: hsl(var(--primary-fg));
   --color-primary-soft: hsl(var(--primary-soft));
-  --color-danger: hsl(var(--danger));
-  --color-warning: hsl(var(--warning));
-  --color-success: hsl(var(--success));
   --color-accent: hsl(var(--accent));
+  --color-cyan: hsl(var(--cyan));
+  --color-success: hsl(var(--success));
+  --color-success-soft: hsl(var(--success-soft));
+  --color-warning: hsl(var(--warning));
+  --color-warning-soft: hsl(var(--warning-soft));
+  --color-danger: hsl(var(--danger));
+  --color-danger-soft: hsl(var(--danger-soft));
   --radius: 0.5rem;
   --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
 }
 
 * { border-color: hsl(var(--border)); }
-
 html, body, #root { height: 100%; }
 
 body {
   margin: 0;
-  background: hsl(var(--bg-alt));
+  background: hsl(var(--bg));
   color: hsl(var(--fg));
   font-family:
     "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: -0.01em;
 }
 
-::selection { background: hsl(var(--primary) / 0.2); }
+::selection { background: hsl(var(--primary) / 0.3); }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--border-strong));
   border-radius: 6px;
-  border: 2px solid hsl(var(--bg-alt));
+  border: 2px solid hsl(var(--bg));
 }
 ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-fg) / 0.5); }
 
+/* ── Animated grid background для login и hero ───────────────────── */
+.bg-grid {
+  background-image:
+    linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--border) / 0.5) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 100%);
+          mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 100%);
+}
+
+.bg-aurora {
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 0%,  hsl(var(--accent) / 0.18), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%, hsl(var(--primary) / 0.18), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, hsl(var(--cyan) / 0.12), transparent 60%);
+}
+
+/* ── Glow / glass utilities ─────────────────────────────────────── */
+.glass {
+  background: hsl(var(--surface) / 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid hsl(var(--border));
+}
+
+.glow-primary {
+  box-shadow:
+    0 0 0 1px hsl(var(--primary) / 0.4),
+    0 0 28px -4px hsl(var(--primary) / 0.5);
+}
+
+/* ── Animations ──────────────────────────────────────────────────── */
 @keyframes pulse-soft {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -110,6 +153,52 @@ body {
 
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in { animation: fade-in 0.2s ease-out; }
+
+@keyframes scan-line {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(2200%); opacity: 0; }
+}
+.animate-scan { animation: scan-line 2.4s ease-in-out infinite; }
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--primary) / 0.15) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-orbit { animation: orbit 8s linear infinite; }
+
+@keyframes ring-pulse {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  80%  { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.animate-ring-pulse { animation: ring-pulse 2s cubic-bezier(0, 0.55, 0.45, 1) infinite; }
+
+/* Gradient text helper */
+.text-gradient {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)) 80%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+}
+
+.mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }

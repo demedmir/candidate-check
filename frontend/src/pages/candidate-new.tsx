@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, FileCheck, Fingerprint, Sliders } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { PageBody, PageHeader } from "@/components/layout";
@@ -11,8 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 const SEGMENTS = [
   { value: "default", label: "default — общая роль" },
-  { value: "driver", label: "driver — водители (стрикт)" },
-  { value: "financial", label: "financial — финсектор (max strict)" },
+  { value: "driver", label: "driver — водители" },
+  { value: "financial", label: "financial — финсектор" },
 ];
 
 export function CandidateNewPage() {
@@ -25,6 +25,7 @@ export function CandidateNewPage() {
     birth_date: "",
     inn: "",
     snils: "",
+    passport: "",
     phone: "",
     email: "",
     role_segment: "default",
@@ -46,15 +47,16 @@ export function CandidateNewPage() {
         birth_date: form.birth_date ? `${form.birth_date}T00:00:00` : null,
         inn: form.inn || null,
         snils: form.snils || null,
+        passport: form.passport || null,
         phone: form.phone || null,
         email: form.email || null,
         role_segment: form.role_segment,
         consent_signed_offline: form.consent_signed_offline,
       });
-      toast.success("Кандидат создан");
+      toast.success("Кандидат добавлен");
       navigate(`/candidates/${data.id}`);
     } catch (e: any) {
-      toast.error(e?.response?.data?.detail ?? "Ошибка создания");
+      toast.error(e?.response?.data?.detail ?? "Ошибка");
     } finally {
       setLoading(false);
     }
@@ -63,23 +65,23 @@ export function CandidateNewPage() {
   return (
     <>
       <PageHeader
+        eyebrow="new dossier"
         title="Новый кандидат"
-        description="Заполните данные — после создания запустите проверку по выбранным источникам"
+        description="Заполни поля → запустишь проверку с детальной страницы"
         actions={
           <Link to="/candidates">
-            <Button variant="ghost">
-              <ChevronLeft size={16} /> К списку
-            </Button>
+            <Button variant="ghost"><ChevronLeft size={16} /> К списку</Button>
           </Link>
         }
       />
       <PageBody>
-        <form onSubmit={onSubmit} className="grid max-w-3xl gap-6">
+        <form onSubmit={onSubmit} className="grid max-w-3xl gap-5">
           <Card>
             <CardHeader>
+              <Fingerprint size={16} className="mt-0.5 text-[hsl(var(--primary))]" />
               <div className="flex-1">
                 <CardTitle>Личные данные</CardTitle>
-                <CardDescription className="mt-0.5">ФИО и дата рождения</CardDescription>
+                <CardDescription>ФИО и дата рождения</CardDescription>
               </div>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
@@ -100,21 +102,18 @@ export function CandidateNewPage() {
 
           <Card>
             <CardHeader>
+              <Sliders size={16} className="mt-0.5 text-[hsl(var(--accent))]" />
               <div className="flex-1">
                 <CardTitle>Идентификаторы</CardTitle>
-                <CardDescription className="mt-0.5">
-                  Чем больше полей, тем точнее сужение по совпадениям
-                </CardDescription>
+                <CardDescription>Чем больше, тем точнее сужение по совпадениям</CardDescription>
               </div>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
-              <Field label="ИНН (10 / 12 цифр)">
-                <Input
-                  value={form.inn}
-                  onChange={(e) => update("inn", e.target.value)}
-                  pattern="\d{10,12}"
-                  inputMode="numeric"
-                />
+              <Field label="ИНН (10/12 цифр)">
+                <Input value={form.inn} onChange={(e) => update("inn", e.target.value)} pattern="\d{10,12}" inputMode="numeric" />
+              </Field>
+              <Field label="Паспорт РФ (10 цифр)">
+                <Input value={form.passport} onChange={(e) => update("passport", e.target.value)} placeholder="1234 567890" />
               </Field>
               <Field label="СНИЛС">
                 <Input value={form.snils} onChange={(e) => update("snils", e.target.value)} />
@@ -122,7 +121,7 @@ export function CandidateNewPage() {
               <Field label="Телефон">
                 <Input value={form.phone} onChange={(e) => update("phone", e.target.value)} type="tel" />
               </Field>
-              <Field label="Email">
+              <Field label="Email" full>
                 <Input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} />
               </Field>
             </CardContent>
@@ -130,25 +129,21 @@ export function CandidateNewPage() {
 
           <Card>
             <CardHeader>
+              <FileCheck size={16} className="mt-0.5 text-[hsl(var(--success))]" />
               <div className="flex-1">
                 <CardTitle>Сегмент и согласие</CardTitle>
-                <CardDescription className="mt-0.5">
-                  Сегмент определяет веса коннекторов и пороги светофора (config/adjudication.yaml)
+                <CardDescription>
+                  Сегмент определяет веса коннекторов в скоринге
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <Field label="Сегмент роли">
-                <Select
-                  value={form.role_segment}
-                  onChange={(e) => update("role_segment", e.target.value)}
-                >
-                  {SEGMENTS.map((s) => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
-                  ))}
+                <Select value={form.role_segment} onChange={(e) => update("role_segment", e.target.value)}>
+                  {SEGMENTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </Select>
               </Field>
-              <label className="flex items-start gap-3 rounded-lg border bg-[hsl(var(--bg-alt))] p-3">
+              <label className="flex items-start gap-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface-2))] p-3 transition-colors hover:bg-[hsl(var(--muted))]">
                 <input
                   type="checkbox"
                   checked={form.consent_signed_offline}
@@ -158,7 +153,7 @@ export function CandidateNewPage() {
                 <div>
                   <div className="text-sm font-medium">Согласие на обработку ПДн подписано</div>
                   <div className="mt-0.5 text-xs text-[hsl(var(--muted-fg))]">
-                    Бумажная форма (152-ФЗ) — без отметки запуск проверки заблокирован
+                    Бумажная форма (152-ФЗ). Без отметки запуск проверки заблокирован.
                   </div>
                 </div>
               </label>
@@ -166,11 +161,9 @@ export function CandidateNewPage() {
           </Card>
 
           <div className="flex justify-end gap-2">
-            <Link to="/candidates">
-              <Button type="button" variant="outline">Отмена</Button>
-            </Link>
+            <Link to="/candidates"><Button type="button" variant="outline">Отмена</Button></Link>
             <Button type="submit" variant="primary" disabled={loading}>
-              {loading ? "Сохранение…" : "Создать кандидата"}
+              {loading ? "Сохранение…" : "Создать кандидата →"}
             </Button>
           </div>
         </form>
@@ -179,9 +172,9 @@ export function CandidateNewPage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, full, children }: { label: string; full?: boolean; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
+    <div className={`space-y-1.5 ${full ? "col-span-2" : ""}`}>
       <Label>{label}</Label>
       {children}
     </div>

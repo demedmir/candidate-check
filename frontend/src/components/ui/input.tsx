@@ -8,9 +8,9 @@ export const Input = React.forwardRef<
   <input
     ref={ref}
     className={cn(
-      "flex h-9 w-full rounded-md border bg-[hsl(var(--surface))] px-3 py-1 text-sm",
+      "flex h-9 w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface-2))] px-3 text-[13px]",
       "transition-all placeholder:text-[hsl(var(--muted-fg))]",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--primary))]/30 focus-visible:border-[hsl(var(--primary))]",
+      "focus:bg-[hsl(var(--surface))] focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/20 focus:outline-none",
       "disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}
@@ -26,8 +26,8 @@ export const Select = React.forwardRef<
   <select
     ref={ref}
     className={cn(
-      "flex h-9 w-full rounded-md border bg-[hsl(var(--surface))] px-3 py-1 text-sm",
-      "transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--primary))]/30 focus-visible:border-[hsl(var(--primary))]",
+      "flex h-9 w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface-2))] px-3 text-[13px]",
+      "transition-all focus:bg-[hsl(var(--surface))] focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary))]/20 focus:outline-none",
       className,
     )}
     {...props}

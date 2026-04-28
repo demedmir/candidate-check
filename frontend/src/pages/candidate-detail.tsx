@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckCircle2,
   ChevronDown,
@@ -31,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Empty } from "@/components/ui/empty";
+import { RiskGauge } from "@/components/ui/risk-gauge";
 import { cn, formatDate, formatDateTime } from "@/lib/utils";
 
 export function CandidateDetailPage() {
@@ -59,13 +61,11 @@ export function CandidateDetailPage() {
   const lastRunId = runs[0]?.id;
   const { data: lastRun } = useQuery({
     queryKey: ["run", candidateId, lastRunId],
-    queryFn: async () =>
-      (await api.get<CheckRunDetail>(`/candidates/${candidateId}/runs/${lastRunId}`)).data,
+    queryFn: async () => (await api.get<CheckRunDetail>(`/candidates/${candidateId}/runs/${lastRunId}`)).data,
     enabled: !!lastRunId,
     refetchInterval: (q) => (q.state.data?.status === "running" ? 2000 : false),
   });
 
-  // Загружаем детали всех запусков (для секции "По источникам")
   const runDetailQueries = useQueries({
     queries: runs.map((r) => ({
       queryKey: ["run", candidateId, r.id],
@@ -78,7 +78,6 @@ export function CandidateDetailPage() {
     .map((q) => q.data)
     .filter((d): d is CheckRunDetail => !!d);
 
-  // Группируем все результаты по source
   const bySource = useMemo(() => {
     const map = new Map<string, Array<{ run: CheckRunDetail; result: CheckResult }>>();
     for (const run of allRunsDetail) {
@@ -87,10 +86,7 @@ export function CandidateDetailPage() {
         map.get(result.source)!.push({ run, result });
       }
     }
-    // sort by run id desc
-    for (const arr of map.values()) {
-      arr.sort((a, b) => b.run.id - a.run.id);
-    }
+    for (const arr of map.values()) arr.sort((a, b) => b.run.id - a.run.id);
     return map;
   }, [allRunsDetail]);
 
@@ -103,34 +99,32 @@ export function CandidateDetailPage() {
       });
     },
     onSuccess: () => {
-      toast.success("Проверка запущена");
+      toast.success("Сканирование запущено");
       qc.invalidateQueries({ queryKey: ["candidate", candidateId] });
       qc.invalidateQueries({ queryKey: ["runs", candidateId] });
     },
-    onError: (e: any) => {
-      toast.error(e?.response?.data?.detail ?? "Не удалось запустить");
-    },
+    onError: (e: any) => toast.error(e?.response?.data?.detail ?? "Не удалось запустить"),
   });
 
   if (!cand) {
     return (
       <>
         <PageHeader title="…" />
-        <PageBody>
-          <Skeleton className="h-32" />
-        </PageBody>
+        <PageBody><Skeleton className="h-32 rounded-xl" /></PageBody>
       </>
     );
   }
 
   const fullName = `${cand.last_name} ${cand.first_name}${cand.middle_name ? " " + cand.middle_name : ""}`;
   const allSelected = selected.size === 0 || selected.size === connectors.length;
+  const isRunning = lastRun?.status === "running";
 
   return (
     <>
       <PageHeader
+        eyebrow={`dossier #${cand.id}`}
         title={fullName}
-        description={`ИНН ${cand.inn ?? "—"}  ·  ДР ${formatDate(cand.birth_date)}  ·  сегмент ${cand.role_segment}`}
+        description={`ИНН ${cand.inn ?? "—"}  ·  ДР ${formatDate(cand.birth_date)}  ·  ${cand.role_segment}`}
         actions={
           <Link to="/candidates">
             <Button variant="ghost"><ChevronLeft size={16} /> К списку</Button>
@@ -138,78 +132,67 @@ export function CandidateDetailPage() {
         }
       />
       <PageBody>
-        {/* Hero block: avatar + main metrics */}
-        <div className="mb-6 grid gap-4 lg:grid-cols-[2fr_1fr_1fr_1fr]">
-          <Card>
-            <CardContent className="flex items-center gap-4">
-              <Avatar name={fullName} size={56} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h2 className="truncate text-lg font-semibold tracking-tight">{fullName}</h2>
+        {/* Hero: Avatar + Risk Gauge + Quick info */}
+        <Card className="mb-6 overflow-hidden">
+          {isRunning && (
+            <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden">
+              <div className="h-full w-1/3 animate-shimmer bg-gradient-to-r from-transparent via-[hsl(var(--primary))] to-transparent" />
+            </div>
+          )}
+          <div className="grid items-center gap-5 p-6 md:grid-cols-[auto_1fr_auto]">
+            <div className="flex items-center gap-4">
+              <Avatar name={fullName} size={72} glow />
+              <div className="space-y-1.5">
+                <h2 className="text-xl font-semibold leading-tight">{fullName}</h2>
+                <div className="flex flex-wrap gap-2">
                   {cand.consent_signed_offline ? (
                     <Badge tone="green">согласие ✓</Badge>
                   ) : (
                     <Badge tone="red">без согласия</Badge>
                   )}
+                  <Badge tone="primary">{cand.role_segment}</Badge>
                 </div>
-                <div className="mt-1 flex flex-wrap gap-3 text-xs text-[hsl(var(--muted-fg))]">
-                  {cand.phone && <span className="inline-flex items-center gap-1"><Phone size={11} /> {cand.phone}</span>}
-                  {cand.email && <span className="inline-flex items-center gap-1"><Mail size={11} /> {cand.email}</span>}
+                <div className="mono flex flex-wrap gap-3 text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">
+                  {cand.phone && <span className="inline-flex items-center gap-1"><Phone size={10} /> {cand.phone}</span>}
+                  {cand.email && <span className="inline-flex items-center gap-1"><Mail size={10} /> {cand.email}</span>}
                   <span>создан {formatDate(cand.created_at)}</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          <MetricCard label="Risk" value={
-            lastRun?.risk_segment ? (
-              <Badge tone={lastRun.risk_segment} className="text-sm">
-                {lastRun.risk_segment} · {lastRun.risk_score}
-              </Badge>
-            ) : <span className="text-sm text-[hsl(var(--muted-fg))]">—</span>
-          } />
-          <MetricCard label="Запусков" value={<span className="font-mono">{runs.length}</span>} />
-          <MetricCard
-            label="Последний"
-            value={
-              lastRun?.status === "running" ? (
-                <span className="inline-flex items-center gap-1.5 text-sm text-[hsl(var(--primary))]">
-                  <Loader2 size={12} className="animate-spin" /> идёт
-                </span>
-              ) : lastRun ? (
-                <span className="text-sm text-[hsl(var(--muted-fg))]">
-                  {formatDateTime(lastRun.finished_at ?? lastRun.created_at)}
-                </span>
-              ) : (
-                <span className="text-sm text-[hsl(var(--muted-fg))]">—</span>
-              )
-            }
-          />
-        </div>
+            <div className="hidden md:block" />
+
+            <div className="flex items-center justify-center md:justify-end">
+              <RiskGauge
+                segment={(lastRun?.risk_segment ?? null) as any}
+                score={lastRun?.risk_score ?? null}
+                size={140}
+              />
+            </div>
+          </div>
+        </Card>
 
         {/* Run check */}
         <Card className="mb-6">
           <CardHeader>
             <div className="flex-1">
-              <CardTitle>Запустить проверку</CardTitle>
-              <p className="mt-0.5 text-xs text-[hsl(var(--muted-fg))]">
-                {selected.size === 0 ? "запустится по всем источникам" : `выбрано ${selected.size} из ${connectors.length}`}
+              <CardTitle>Сканирование</CardTitle>
+              <p className="mono mt-0.5 text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">
+                {selected.size === 0 ? "запустится по всем источникам" : `выбрано ${selected.size} / ${connectors.length}`}
               </p>
             </div>
             <Button
               variant="primary"
               onClick={() => runCheck.mutate()}
-              disabled={!cand.consent_signed_offline || runCheck.isPending}
+              disabled={!cand.consent_signed_offline || runCheck.isPending || isRunning}
             >
-              {runCheck.isPending ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
-              {runCheck.isPending ? "Запуск…" : "Запустить"}
+              {runCheck.isPending || isRunning ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+              {isRunning ? "Сканирую…" : runCheck.isPending ? "Запуск…" : "Запустить"}
             </Button>
           </CardHeader>
           <CardContent>
             {!cand.consent_signed_offline ? (
-              <p className="text-sm text-[hsl(var(--warning))]">
-                ⚠ Согласие на обработку ПДн не отмечено — запуск заблокирован.
-              </p>
+              <p className="text-sm text-[hsl(var(--warning))]">⚠ Согласие на ПДн не отмечено — запуск заблокирован.</p>
             ) : (
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {connectors.map((c) => {
@@ -218,28 +201,25 @@ export function CandidateDetailPage() {
                     <label
                       key={c.key}
                       className={cn(
-                        "flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2.5 text-sm transition-colors",
+                        "group flex cursor-pointer items-center gap-2.5 rounded-lg border border-[hsl(var(--border))] px-3 py-2.5 text-sm transition-all",
                         checked
-                          ? "border-[hsl(var(--primary))]/40 bg-[hsl(var(--primary-soft))]"
-                          : "hover:bg-[hsl(var(--bg-alt))]",
+                          ? "border-[hsl(var(--primary))]/50 bg-[hsl(var(--primary-soft))]/40 shadow-[0_0_12px_-4px_hsl(var(--primary)/0.4)]"
+                          : "bg-[hsl(var(--surface-2))] hover:border-[hsl(var(--border-strong))]",
                       )}
                     >
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={(e) => {
-                          const s = new Set(
-                            selected.size === 0 ? connectors.map((x) => x.key) : selected,
-                          );
-                          if (e.target.checked) s.add(c.key);
-                          else s.delete(c.key);
+                          const s = new Set(selected.size === 0 ? connectors.map((x) => x.key) : selected);
+                          if (e.target.checked) s.add(c.key); else s.delete(c.key);
                           setSelected(s.size === connectors.length ? new Set() : s);
                         }}
                         className="h-4 w-4 accent-[hsl(var(--primary))]"
                       />
                       <div className="min-w-0">
                         <div className="font-medium leading-tight">{c.title}</div>
-                        <div className="font-mono text-[10px] text-[hsl(var(--muted-fg))]">{c.key}</div>
+                        <div className="mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">{c.key}</div>
                       </div>
                     </label>
                   );
@@ -256,90 +236,77 @@ export function CandidateDetailPage() {
               <div className="flex-1">
                 <CardTitle>
                   Запуск #{lastRun.id}
-                  <span className="ml-2 text-xs font-normal text-[hsl(var(--muted-fg))]">
+                  <span className="mono ml-2 text-[10px] font-normal uppercase tracking-wider text-[hsl(var(--muted-fg))]">
                     {lastRun.status === "running" ? (
                       <span className="inline-flex items-center gap-1 text-[hsl(var(--primary))]">
-                        <StatusDot tone="yellow" /> идёт
+                        <StatusDot tone="yellow" /> сканирование
                       </span>
                     ) : (
-                      <>
-                        {formatDateTime(lastRun.started_at)} → {formatDateTime(lastRun.finished_at)}
-                      </>
+                      <>{formatDateTime(lastRun.started_at)} → {formatDateTime(lastRun.finished_at)}</>
                     )}
                   </span>
                 </CardTitle>
               </div>
               {lastRun.risk_segment && (
-                <Badge tone={lastRun.risk_segment} className="text-sm">
+                <Badge tone={lastRun.risk_segment as any}>
                   {lastRun.risk_segment} · score {lastRun.risk_score}
                 </Badge>
               )}
             </CardHeader>
 
-            {/* Summary chips: сколько пройдено / требует внимания / не пройдено / ошибок */}
-            <div className="grid grid-cols-2 gap-px border-b bg-[hsl(var(--border))] sm:grid-cols-4">
-              {summarize(lastRun.results).map((s) => (
-                <SummaryStat key={s.label} {...s} />
-              ))}
+            <div className="grid grid-cols-2 gap-px border-b border-[hsl(var(--border))] bg-[hsl(var(--border))] sm:grid-cols-4">
+              {summarize(lastRun.results).map((s) => <SummaryStat key={s.label} {...s} />)}
             </div>
 
             <CardContent className="p-0">
-              <div className="divide-y">
-                {lastRun.results.map((r) => (
-                  <ResultRow key={r.source} r={r} />
-                ))}
+              <div className="divide-y divide-[hsl(var(--border))]">
+                {lastRun.results.map((r) => <ResultRow key={r.source} r={r} />)}
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* По источникам */}
+        {/* By source */}
         {bySource.size > 0 && (
           <Card className="mb-6">
             <CardHeader>
               <div className="flex-1">
                 <CardTitle>По источникам</CardTitle>
-                <p className="mt-0.5 text-xs text-[hsl(var(--muted-fg))]">
-                  История проверок по каждой базе. Кликните на строку, чтобы развернуть детали и raw-данные.
+                <p className="mono mt-0.5 text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">
+                  агрегация всех проверок · drill-in для raw-данных
                 </p>
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y">
+              <div className="divide-y divide-[hsl(var(--border))]">
                 {connectors
                   .map((c) => ({ connector: c, history: bySource.get(c.key) ?? [] }))
                   .filter((g) => g.history.length > 0)
                   .map(({ connector, history }) => (
-                    <SourceGroup
-                      key={connector.key}
-                      connector={connector}
-                      history={history}
-                    />
+                    <SourceGroup key={connector.key} connector={connector} history={history} />
                   ))}
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* History */}
+        {/* Run history */}
         <Card>
           <CardHeader>
-            <div className="flex-1">
-              <CardTitle>История запусков</CardTitle>
-            </div>
+            <div className="flex-1"><CardTitle>История запусков</CardTitle></div>
           </CardHeader>
           <CardContent className="p-0">
             {runs.length === 0 ? (
               <Empty
                 icon={ScrollText}
                 title="Запусков ещё нет"
-                description="Запустите первую проверку, чтобы получить риск-скор"
+                description="Запустите первое сканирование, чтобы получить риск-скор"
                 className="border-none py-12"
               />
             ) : (
               <table className="w-full text-sm">
-                <thead className="border-b bg-[hsl(var(--bg-alt))]">
-                  <tr className="text-left text-[11px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">
+                <thead className="border-b border-[hsl(var(--border))] bg-[hsl(var(--surface-2))]">
+                  <tr className="mono text-left text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">
                     <th className="px-5 py-2.5 font-medium">#</th>
                     <th className="px-5 py-2.5 font-medium">Сегмент</th>
                     <th className="px-5 py-2.5 font-medium">Score</th>
@@ -349,18 +316,14 @@ export function CandidateDetailPage() {
                 </thead>
                 <tbody>
                   {runs.map((r) => (
-                    <tr key={r.id} className="border-b last:border-0">
-                      <td className="px-5 py-2.5 font-mono text-xs">#{r.id}</td>
+                    <tr key={r.id} className="border-b border-[hsl(var(--border))] last:border-0">
+                      <td className="mono px-5 py-2.5 text-xs">#{r.id}</td>
                       <td className="px-5 py-2.5">
-                        {r.risk_segment ? (
-                          <Badge tone={r.risk_segment}>{r.risk_segment}</Badge>
-                        ) : (
-                          <span className="text-xs text-[hsl(var(--muted-fg))]">—</span>
-                        )}
+                        {r.risk_segment ? <Badge tone={r.risk_segment as any}>{r.risk_segment}</Badge> : <span className="text-xs text-[hsl(var(--muted-fg))]">—</span>}
                       </td>
-                      <td className="px-5 py-2.5 font-mono">{r.risk_score ?? "—"}</td>
-                      <td className="px-5 py-2.5 text-xs">{r.status}</td>
-                      <td className="px-5 py-2.5 text-xs text-[hsl(var(--muted-fg))]">
+                      <td className="mono px-5 py-2.5 tabular-nums">{r.risk_score ?? "—"}</td>
+                      <td className="mono px-5 py-2.5 text-[11px] uppercase tracking-wider">{r.status}</td>
+                      <td className="mono px-5 py-2.5 text-[11px] text-[hsl(var(--muted-fg))]">
                         {formatDateTime(r.created_at)}
                       </td>
                     </tr>
@@ -375,18 +338,7 @@ export function CandidateDetailPage() {
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <Card>
-      <CardContent className="space-y-1.5">
-        <div className="text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-fg))]">
-          {label}
-        </div>
-        <div>{value}</div>
-      </CardContent>
-    </Card>
-  );
-}
+/* ── helpers ─────────────────────────────────────────────────────── */
 
 type StatusKey = "ok" | "warning" | "fail" | "error";
 
@@ -419,8 +371,10 @@ function SummaryStat({ label, value, tone }: { label: string; value: number; ton
                       : "text-[hsl(var(--muted-fg))]";
   return (
     <div className="bg-[hsl(var(--surface))] px-5 py-3">
-      <div className="text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-fg))]">{label}</div>
-      <div className={cn("mt-0.5 text-2xl font-semibold tracking-tight tabular-nums", value === 0 ? "text-[hsl(var(--muted-fg))]" : accent)}>{value}</div>
+      <div className="mono text-[9px] uppercase tracking-[0.2em] text-[hsl(var(--muted-fg))]">{label}</div>
+      <div className={cn("mono mt-0.5 text-2xl font-bold tracking-tight tabular-nums", value === 0 ? "text-[hsl(var(--muted-fg))]" : accent)}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -429,17 +383,16 @@ function ResultRow({ r }: { r: CheckResult }) {
   const meta = STATUS_META[r.status as StatusKey] ?? STATUS_META.error;
   const Icon = meta.Icon;
   const [open, setOpen] = useState(false);
-
   const hasPayload = r.payload && Object.keys(r.payload).length > 0;
   const hasDetails = hasPayload || !!r.error;
 
   return (
-    <div className={cn("transition-colors", open && "bg-[hsl(var(--bg-alt))]")}>
+    <div className={cn("transition-colors", open && "bg-[hsl(var(--surface-2))]")}>
       <button
         type="button"
         className={cn(
           "flex w-full items-start gap-3 px-5 py-3.5 text-left transition-colors",
-          hasDetails && "hover:bg-[hsl(var(--bg-alt))] cursor-pointer",
+          hasDetails && "hover:bg-[hsl(var(--surface-2))] cursor-pointer",
           !hasDetails && "cursor-default",
         )}
         onClick={() => hasDetails && setOpen((o) => !o)}
@@ -451,38 +404,38 @@ function ResultRow({ r }: { r: CheckResult }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone={meta.badgeTone}>{meta.label}</Badge>
-            <span className="font-mono text-[11px] text-[hsl(var(--muted-fg))]">{r.source}</span>
+            <span className="mono text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">{r.source}</span>
             {r.duration_ms != null && (
-              <span className="text-[11px] text-[hsl(var(--muted-fg))]">{r.duration_ms}ms</span>
+              <span className="mono text-[10px] text-[hsl(var(--muted-fg))]">{r.duration_ms}ms</span>
             )}
             {hasDetails && (
-              <ChevronDown
-                size={12}
-                className={cn(
-                  "ml-auto text-[hsl(var(--muted-fg))] transition-transform",
-                  open && "rotate-180",
-                )}
-              />
+              <ChevronDown size={12} className={cn("ml-auto text-[hsl(var(--muted-fg))] transition-transform", open && "rotate-180")} />
             )}
           </div>
           <p className="mt-1 text-sm leading-snug">{r.summary}</p>
         </div>
       </button>
-      {open && hasDetails && (
-        <div className="space-y-2 border-t border-[hsl(var(--border))] px-5 pb-4 pt-3 animate-fade-in">
-          {hasPayload && <PayloadView payload={r.payload} />}
-          {r.error && (
-            <div>
-              <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--danger))]">
-                Ошибка
-              </div>
-              <pre className="overflow-x-auto whitespace-pre-wrap rounded-md bg-[hsl(var(--danger-soft))] p-3 text-[11px] text-[hsl(var(--danger))]">
-                {r.error}
-              </pre>
+      <AnimatePresence>
+        {open && hasDetails && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-2 border-t border-[hsl(var(--border))] px-5 pb-4 pt-3">
+              {hasPayload && <PayloadView payload={r.payload} />}
+              {r.error && (
+                <div>
+                  <div className="mono mb-1 text-[10px] uppercase tracking-wider text-[hsl(var(--danger))]">Ошибка</div>
+                  <pre className="overflow-x-auto whitespace-pre-wrap rounded-md bg-[hsl(var(--danger-soft))] p-3 text-[11px] text-[hsl(var(--danger))]">{r.error}</pre>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -492,23 +445,16 @@ function PayloadView({ payload }: { payload: Record<string, unknown> }) {
   return (
     <div>
       <div className="mb-1 flex items-center justify-between">
-        <div className="text-[10px] font-medium uppercase tracking-wider text-[hsl(var(--muted-fg))]">
-          Данные ответа
-        </div>
+        <div className="mono text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">Данные ответа</div>
         <button
           type="button"
-          className="inline-flex items-center gap-1 text-[10px] text-[hsl(var(--muted-fg))] hover:text-[hsl(var(--fg))]"
-          onClick={() => {
-            navigator.clipboard.writeText(json);
-            toast.success("Скопировано в буфер");
-          }}
+          className="mono inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))] transition-colors hover:text-[hsl(var(--fg))]"
+          onClick={() => { navigator.clipboard.writeText(json); toast.success("Скопировано"); }}
         >
-          <Copy size={11} /> Копировать JSON
+          <Copy size={11} /> json
         </button>
       </div>
-      <pre className="max-h-80 overflow-auto whitespace-pre-wrap rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-3 font-mono text-[11px] text-[hsl(var(--fg))]">
-        {json}
-      </pre>
+      <pre className="mono max-h-80 overflow-auto whitespace-pre-wrap rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--surface-2))] p-3 text-[11px]">{json}</pre>
       <SmartHints payload={payload} />
     </div>
   );
@@ -521,22 +467,18 @@ function SmartHints({ payload }: { payload: Record<string, unknown> }) {
   return (
     <div className="mt-2 flex flex-wrap gap-2">
       {url && typeof url === "string" && (
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--surface))] px-2 py-1 text-[11px] hover:bg-[hsl(var(--bg-alt))]"
-        >
-          Открыть на источнике ↗
+        <a href={url} target="_blank" rel="noreferrer"
+          className="mono inline-flex items-center gap-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--surface))] px-2 py-1 text-[10px] uppercase tracking-wider hover:bg-[hsl(var(--surface-2))]">
+          источник ↗
         </a>
       )}
       {typeof total === "number" && (
-        <span className="rounded-md bg-[hsl(var(--muted))] px-2 py-1 text-[11px]">
+        <span className="mono rounded-md bg-[hsl(var(--muted))] px-2 py-1 text-[10px] uppercase tracking-wider">
           совпадений: {total}
         </span>
       )}
       {Array.isArray(matches) && matches.length > 0 && (
-        <span className="rounded-md bg-[hsl(var(--muted))] px-2 py-1 text-[11px]">
+        <span className="mono rounded-md bg-[hsl(var(--muted))] px-2 py-1 text-[10px] uppercase tracking-wider">
           в выборке: {matches.length}
         </span>
       )}
@@ -554,13 +496,12 @@ function SourceGroup({
   const [open, setOpen] = useState(false);
   const latest = history[0];
   const meta = STATUS_META[latest.result.status as StatusKey] ?? STATUS_META.error;
-  const Icon = meta.Icon;
 
   return (
     <div>
       <button
         type="button"
-        className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-[hsl(var(--bg-alt))]"
+        className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-[hsl(var(--surface-2))]"
         onClick={() => setOpen((o) => !o)}
       >
         <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", meta.iconBg)}>
@@ -569,38 +510,38 @@ function SourceGroup({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-medium">{connector.title}</span>
-            <span className="font-mono text-[10px] text-[hsl(var(--muted-fg))]">{connector.key}</span>
+            <span className="mono text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">{connector.key}</span>
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs">
             <Badge tone={meta.badgeTone}>{meta.label}</Badge>
-            <span className="text-[hsl(var(--muted-fg))]">
-              последний запуск #{latest.run.id} · {formatDateTime(latest.run.created_at)}
+            <span className="mono text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">
+              #{latest.run.id} · {formatDateTime(latest.run.created_at)}
             </span>
           </div>
         </div>
         <div className="text-right">
-          <div className="text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">
-            всего проверок
-          </div>
-          <div className="font-mono text-sm">{history.length}</div>
+          <div className="mono text-[9px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">проверок</div>
+          <div className="mono text-sm tabular-nums">{history.length}</div>
         </div>
-        <ChevronDown
-          size={14}
-          className={cn(
-            "text-[hsl(var(--muted-fg))] transition-transform",
-            open && "rotate-180",
-          )}
-        />
+        <ChevronDown size={14} className={cn("text-[hsl(var(--muted-fg))] transition-transform", open && "rotate-180")} />
       </button>
-      {open && (
-        <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--bg-alt))] animate-fade-in">
-          <div className="space-y-px">
-            {history.map(({ run, result }) => (
-              <SourceHistoryItem key={run.id} runId={run.id} runDate={run.created_at} result={result} />
-            ))}
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="overflow-hidden border-t border-[hsl(var(--border))] bg-[hsl(var(--surface-2))]"
+          >
+            <div>
+              {history.map(({ run, result }) => (
+                <SourceHistoryItem key={run.id} runId={run.id} runDate={run.created_at} result={result} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -621,13 +562,11 @@ function SourceHistoryItem({
   const Icon = meta.Icon;
 
   return (
-    <div className="bg-[hsl(var(--surface))]">
+    <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--surface))]">
       <button
         type="button"
-        className={cn(
-          "flex w-full items-start gap-3 px-5 py-2.5 text-left text-sm",
-          hasDetails && "hover:bg-[hsl(var(--bg-alt))] cursor-pointer",
-        )}
+        className={cn("flex w-full items-start gap-3 px-5 py-2.5 text-left text-sm",
+          hasDetails && "hover:bg-[hsl(var(--surface-2))] cursor-pointer")}
         onClick={() => hasDetails && setOpen((o) => !o)}
         disabled={!hasDetails}
       >
@@ -637,28 +576,20 @@ function SourceHistoryItem({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone={meta.badgeTone}>{meta.label}</Badge>
-            <span className="font-mono text-[10px] text-[hsl(var(--muted-fg))]">#{runId}</span>
-            <span className="text-[10px] text-[hsl(var(--muted-fg))]">{formatDateTime(runDate)}</span>
+            <span className="mono text-[10px] uppercase tracking-wider text-[hsl(var(--muted-fg))]">#{runId}</span>
+            <span className="mono text-[10px] text-[hsl(var(--muted-fg))]">{formatDateTime(runDate)}</span>
           </div>
           <p className="mt-0.5 leading-snug">{result.summary}</p>
         </div>
         {hasDetails && (
-          <ChevronDown
-            size={12}
-            className={cn(
-              "mt-1 text-[hsl(var(--muted-fg))] transition-transform",
-              open && "rotate-180",
-            )}
-          />
+          <ChevronDown size={12} className={cn("mt-1 text-[hsl(var(--muted-fg))] transition-transform", open && "rotate-180")} />
         )}
       </button>
       {open && hasDetails && (
         <div className="space-y-2 border-t border-[hsl(var(--border))] px-5 pb-3 pt-2">
           {hasPayload && <PayloadView payload={result.payload} />}
           {result.error && (
-            <pre className="overflow-x-auto whitespace-pre-wrap rounded-md bg-[hsl(var(--danger-soft))] p-2 text-[11px] text-[hsl(var(--danger))]">
-              {result.error}
-            </pre>
+            <pre className="mono overflow-x-auto whitespace-pre-wrap rounded-md bg-[hsl(var(--danger-soft))] p-2 text-[11px] text-[hsl(var(--danger))]">{result.error}</pre>
           )}
         </div>
       )}
